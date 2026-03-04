@@ -6,20 +6,296 @@
 <style>
 /* Center stage and all content */
 body { font-family: Arial; padding:20px; text-align:center; }
+body {
+    margin: 0;
+    padding: 0;
+}
+html, body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* ===== TOP BAR PROFESSIONAL STYLE ===== */
+/* ===== TOP HEADER FULL WIDTH ===== */
+#topHeader {
+    width: 100vw;              /* full viewport width */
+    height:200px;             /* adjust as needed */
+    margin: 0;                 /* no margin */
+    padding: 0;                /* no padding */
+    background: url('your-image.jpg') no-repeat center center fixed;
+    background-size: cover;     /* cover full area */
+    position: relative;
+    box-sizing: border-box;
+}
 
+/* Optional semi-transparent overlay for readability */
+#topHeader::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.35);  /* adjust opacity */
+    z-index: 0;
+}
+
+/* Content above overlay */
+#topBar {
+    position:top;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: -moz-inline-box;
+    flex-direction: column;
+    justify-content: flex-start; /* stick content to top */
+    align-items: flex-start;     /* align left */
+    padding: 10px 20px 0 20px;  /* top + left/right padding */
+    color: white;
+}
+
+/* Title and mic */
+#topBar h2 {
+    margin: 0;
+    font-size: 28px;
+}
+
+#topBar #micStatus {
+    margin: 5px 0 0 0;
+    font-weight: bold;
+    font-size: 16px;
+    color: #ffeb3b;  /* yellow warning */
+}
+
+/* Language selector fixed top-left */
+#languageSection {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 2;
+}
+
+#languageSelect {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    background: #2d89ef;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#languageSelect:hover {
+    background: #1b5fad;
+}
+/* ===== TOP BAR MINIMAL ===== */
+#topBar {
+    width: 100%;
+    margin: 0;
+    padding: 5px 20px 5px 20px; /* very small padding top/bottom */
+    position: relative;
+}
+
+/* Title */
+#topBar h2 {
+    margin: 0;
+    font-size: 24px;
+    text-align: center;   /* keep title centered */
+}
+
+/* Microphone status */
+#micStatus {
+    text-align: top;
+    font-weight: 500;
+    font-size: 12px;
+    margin: 3px 0;        /* tiny margin */
+    color: #ff4444;       /* red warning style */
+}
+
+/* Language selector top-left */
+#languageSection {
+    position: fixed;
+    top: 5px;
+    left: 15px;
+    display: flex;
+    align-items: center;
+    gap: 45px;
+}
+
+/* Label & select professional */
+#languageSection label {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+#languageSelect {
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: none;
+    background: #2d89ef;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#languageSelect:hover {
+    background: #1b5fad;
+}
+/* ===== TOP BAR ===== */
+#topBar {
+    width: 45%;
+    max-width: 1000px;
+    margin: auto;
+    padding: -5px 0;
+    position: top;
+}
+
+/* Title Centered */
+#topBar h2 {
+    margin: 10px 0 5px 0;
+    font-size: 28px;
+    text-align: center;
+}
+
+/* Microphone Status */
+#micStatus {
+    text-align: top;
+    font-weight: 300;
+    margin-bottom: -50px;
+}
+/* ===== SCROLLING TEXT ===== */
+#scrollText {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    box-sizing: border-box;
+    margin: 15px 0;
+    font-weight: bold;
+    color: #2d89ef;
+    animation: scrollLeft 12s linear infinite;
+}
+/* ===== SCROLL WRAPPER WITH FADE ===== */
+#scrollWrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin: 15px 0;
+}
+
+/* Fade effect left & right */
+#scrollWrapper::before,
+#scrollWrapper::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 80px;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+#scrollWrapper::before {
+    left: 0;
+    background: linear-gradient(to right, white, transparent);
+}
+
+#scrollWrapper::after {
+    right: 0;
+    background: linear-gradient(to left, white, transparent);
+}
+
+/* Moving Text */
+#scrollText {
+    display: inline-block;
+    white-space: nowrap;
+    font-weight: bold;
+    color: #2d89ef;
+    animation: scrollLeft 30s linear infinite;
+}
+
+/* Animation */
+@keyframes scrollLeft {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+/* Animation */
+@keyframes scrollLeft {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+/* ===== LANGUAGE TOP LEFT ===== */
+#languageSection {
+    position: fixed;
+    top: 10px;
+    left: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Add more space above title */
+#topBar h2 {
+    margin-top: 70px;  /* increase this for more space */
+}
+
+/* Label style */
+#languageSection label {
+    font-weight: bold;
+}
+
+/* Colored Professional Dropdown */
+#languageSelect {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    background: #44f61c;     
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Dropdown hover */
+#languageSelect:hover {
+    background: #c5dc2b;
+}
 /* Word box styling */
 #wordBox {
-    font-size: 60px;          /* make the word bigger */
+    font-size: 80px;          /* make the word bigger */
     font-weight: bold;
     display: inline-block;
-    margin: 40px 0;           /* more space above and below */
-    line-height: 1.5;         /* vertical spacing inside */
+    margin: 100px 0;           /* more space above and below */
+    line-height: 0.5;  
+           /* vertical spacing inside */
 }
-#wordBox span.brackets {
-    margin: 0 15px;           /* space between brackets and word */
-    font-weight: normal;       /* thinner brackets */
+#targetWord {
+    display: inline-block;
+    animation: float 2.5s ease-in-out infinite;
+    text-shadow:
+        2px 2px 4px rgba(0,0,0,0.3),
+        0px 18px 12px rgba(0,0,0,0.25);
 }
 
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0px); }
+}
+#wordBox span.dashes {
+    font-weight: normal;      /* makes the dashes thinner */
+    color: #555;              /* optional: lighter color */
+    letter-spacing: 1px;
+    margin: 2px 0;        /* optional: space between dashes */
+}
+#wordBox span.brackets {
+    font-weight: 100;       /* very thin */
+    font-size: 48px;        /* same size as word for alignment */
+    color: #333;            /* optional: slightly lighter than black */
+    margin: 0 50px;         /* spacing between brackets and word */
+}
 /* Buttons styling */
 button { padding:10px 18px; font-size:16px; margin:8px; }
 
@@ -37,24 +313,56 @@ select { padding:5px; font-size:16px; }
 </style>
 </head>
 <body>
+<div id="leftImage" style="
+    position: fixed;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    width: 120px;
+    height: 120px;
+    display: none;
+    border-radius: 10px;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+    z-index: 5;
+">
+    <img id="wordImage" src="" alt="Word Image" style="width:100%; height:100%; object-fit:contain;">
+</div>
+<div id="topHeader">
+    <div id="topBar">
+        <h2>📘 Learning Alphabet System</h2>
+        <p id="micStatus">⚠ Click Record and allow microphone access</p>
 
-<h2>🎓 Voice Practice System</h2>
+        <div id="languageSection">
+            <label>Select Language:</label>
+            <select id="languageSelect" onchange="changeLanguage()">
+                <option value="en-US">English</option>
+                <option value="ar-SA">Arabic</option>
+                <option value="ur-PK">Urdu</option>
+            </select>
+        </div>
+    </div>
+</div>
 
-<p id="micStatus">Checking microphone permission...</p>
 
-<label>Select Language:</label>
-<select id="languageSelect" onchange="changeLanguage()">
-<option value="en-US">English</option>
-<option value="ar-SA">Arabic</option>
-<option value="ur-PK">Urdu</option>
-</select>
+
+
+<div id="scrollWrapper">
+    <div id="scrollText">
+        🌟 Welcome to Learning Alphabet System – Practice Daily – Improve Pronunciation – 🌟
+    </div>
+</div>
+
 
 <hr>
 
 <!-- Word box with dashes -->
-<p><strong>Word:</strong> 
+<p><strong></strong> 
     <span id="wordBox">
-        -------- <span class="brackets">[</span> <span id="targetWord">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="brackets">]</span> --------
+        <span class="dashes"></span> 
+        <span class="brackets">[</span> 
+        <span id="targetWord"></span> 
+        <span class="brackets">]</span> 
+        <span class="dashes"></span>
     </span>
 </p>
 
@@ -94,6 +402,20 @@ function initWord(){
     document.getElementById("targetWord").innerText = currentWord;
     document.getElementById("spoken").innerText = "You said: ---";
     document.getElementById("result").innerText = "❓";
+
+    // Show corresponding image on left
+    const imgContainer = document.getElementById("leftImage");
+    const img = document.getElementById("wordImage");
+    
+    // get image path
+    const imgSrc = wordImages[currentLanguage][currentWord];
+    
+    if(imgSrc && imgSrc !== ""){
+        img.src = imgSrc;          // set image source
+        imgContainer.style.display = "block"; // show container
+    } else {
+        imgContainer.style.display = "none";  // hide if no image
+    }
 }
 initWord();
 
@@ -258,7 +580,29 @@ function retryWrong(){
 function restart(){
     location.reload();
 }
-
+const wordImages = {
+    "en-US": {
+        "Apple": "images/apple.png",
+        "Banana": "images/banana.png",
+        "Orange": "images/orange.png",
+        "Grape": "images/grape.png",
+        "Lemon": "images/lemon.png"
+    },
+    "ar-SA": {
+        "تفاحة": "images/apple.png",
+        "موز": "images/banana.png",
+        "برتقال": "images/orange.png",
+        "عنب": "images/grape.png",
+        "ليمون": "images/lemon.png"
+    },
+    "ur-PK": {
+        "سیب": "images/apple.png",
+        "کیلا": "images/banana.png",
+        "سنگترہ": "images/orange.png",
+        "انگور": "images/grape.png",
+        "لیموں": "images/lemon.png"
+    }
+};
 </script>
 </body>
 </html>a
