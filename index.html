@@ -2,20 +2,38 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Voice Practice System</title>
+<title>Voice Practice System - Word Box</title>
 <style>
-body { font-family: Arial; padding:20px; }
-button { padding:8px 15px; font-size:16px; margin:5px; }
+/* Center stage and all content */
+body { font-family: Arial; padding:20px; text-align:center; }
+
+/* Word box styling */
+#wordBox {
+    font-size: 48px;
+    font-weight: bold;
+    display: inline-block;
+    margin: 20px 0;
+}
+
+/* Buttons styling */
+button { padding:10px 18px; font-size:16px; margin:8px; }
+
+/* Correct/Wrong lists centered */
+#lists { display: inline-block; text-align:left; margin-top:20px; }
+
+/* Other elements styling */
 #status { font-weight:bold; margin-top:10px; }
 #spoken { font-size:18px; margin-top:10px; color:blue; }
 #result { font-size:40px; margin-top:10px; }
 #micStatus { margin-bottom:15px; font-weight:bold; }
 select { padding:5px; font-size:16px; }
+.recording { background:red; color:white; }
+#nextPageBtn, #retryBtn, #restartBtn { display:none; background:green; color:white; }
 </style>
 </head>
 <body>
 
-<h2>Voice Practice System</h2>
+<h2>🎓 Voice Practice System</h2>
 
 <p id="micStatus">Checking microphone permission...</p>
 
@@ -28,116 +46,198 @@ select { padding:5px; font-size:16px; }
 
 <hr>
 
-<p><strong>Word:</strong> <span id="targetWord">Apple</span></p>
+<!-- Word box with dashes -->
+<p><strong>Word:</strong> <span id="wordBox">-------- [ <span id="targetWord"></span> ] --------</span></p>
 
-<button onclick="startRecording()">🎙 Record</button>
+<button id="recordBtn" onclick="startRecording()">🎙 Record</button>
 <button onclick="playCorrect()">🔊 Play Correct Sound</button>
+<button id="nextBtn" onclick="nextWord()">➡ Next Word</button>
+<button id="nextPageBtn" onclick="goNextPage()">🎯 Next Page</button>
+<button id="retryBtn" onclick="retryWrong()">🔄 Try Again</button>
+<button id="restartBtn" onclick="restart()">🔁 Restart</button>
 
 <p id="status">Status: Idle</p>
 <p id="spoken">You said: ---</p>
 <p id="result">❓</p>
 
-<script>
+<div id="lists">
+    <div><strong>✅ Correct Words:</strong> <span id="correctList"></span></div>
+    <div><strong>❌ Wrong Words:</strong> <span id="wrongList"></span></div>
+</div>
 
-// ===================== WORDS =====================
-const words = {
-    "en-US": "Apple",
-    "ar-SA": "تفاحة",
-    "ur-PK": "سیب"
+<script>
+// ================= WORD LIST =================
+const wordList = {
+    "en-US": ["Apple", "Banana", "Orange", "Grape", "Lemon"],
+    "ar-SA": ["تفاحة", "موز", "برتقال", "عنب", "ليمون"],
+    "ur-PK": ["سیب", "کیلا", "سنگترہ", "انگور", "لیموں"]
 };
 
 let currentLanguage = "en-US";
-let currentWord = words[currentLanguage];
+let currentIndex = 0;
+let currentWord = wordList[currentLanguage][currentIndex];
 
-// ===================== CHANGE LANGUAGE =====================
-function changeLanguage(){
-    currentLanguage = document.getElementById("languageSelect").value;
-    currentWord = words[currentLanguage];
+let correctWords = [];
+let wrongWords = [];
+
+function initWord(){
+    currentWord = wordList[currentLanguage][currentIndex];
     document.getElementById("targetWord").innerText = currentWord;
     document.getElementById("spoken").innerText = "You said: ---";
     document.getElementById("result").innerText = "❓";
 }
+initWord();
 
-// ===================== MICROPHONE PERMISSION CHECK =====================
+function changeLanguage(){
+    currentLanguage = document.getElementById("languageSelect").value;
+    currentIndex = 0;
+    correctWords = [];
+    wrongWords = [];
+    document.getElementById("nextPageBtn").style.display = "none";
+    document.getElementById("retryBtn").style.display = "none";
+    document.getElementById("restartBtn").style.display = "none";
+    updateLists();
+    initWord();
+}
+
 async function checkMicPermission() {
     try {
         const permission = await navigator.permissions.query({ name: 'microphone' });
-
         updatePermissionStatus(permission.state);
-
-        permission.onchange = () => {
-            updatePermissionStatus(permission.state);
-        };
-
+        permission.onchange = () => updatePermissionStatus(permission.state);
     } catch (error) {
         document.getElementById("micStatus").innerText =
-            "⚠ Permission API not supported in this browser.";
+            "⚠ Permission API not supported.";
     }
 }
 
 function updatePermissionStatus(state){
     if (state === "granted") {
-        document.getElementById("micStatus").innerText =
-            "🎤 Microphone: Allowed (Always)";
-    }
-    else if (state === "prompt") {
-        document.getElementById("micStatus").innerText =
-            "⚠ Microphone: Permission Required (Click Record)";
-    }
-    else if (state === "denied") {
-        document.getElementById("micStatus").innerText =
-            "❌ Microphone Blocked. Enable it from browser settings.";
+        document.getElementById("micStatus").innerText = "🎤 Microphone: Allowed";
+    } else if (state === "prompt") {
+        document.getElementById("micStatus").innerText = "⚠ Click Record and allow microphone access";
+    } else if (state === "denied") {
+        document.getElementById("micStatus").innerText = "❌ Microphone blocked. Enable in browser settings.";
     }
 }
 
 checkMicPermission();
 
-// ===================== RECORDING =====================
 function startRecording(){
-
+    const recordBtn = document.getElementById("recordBtn");
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = currentLanguage;
+    recognition.continuous = false;
+    recognition.interimResults = true;
 
-    recognition.onstart = function(){
-        document.getElementById("status").innerText = "Status: 🎙 Listening...";
-    };
+    recordBtn.classList.add("recording");
+    document.getElementById("status").innerText = "Status: 🎙 Listening... Speak now";
+    document.getElementById("spoken").innerText = "You said: ";
 
     recognition.onresult = function(event){
-        let spokenText = event.results[0][0].transcript.trim();
+        let spokenText = "";
+        for (let i = 0; i < event.results.length; i++) {
+            spokenText += event.results[i][0].transcript;
+        }
         document.getElementById("spoken").innerText = "You said: " + spokenText;
-        checkAnswer(spokenText);
-    };
-
-    recognition.onerror = function(event){
-        document.getElementById("status").innerText = "Status: ❌ Error";
     };
 
     recognition.onend = function(){
+        recordBtn.classList.remove("recording");
+        let spokenText = document.getElementById("spoken").innerText.replace("You said: ", "").trim();
+        if(spokenText !== ""){
+            let correct = checkAnswer(spokenText);
+            if(correct){
+                if(!correctWords.includes(currentWord)) correctWords.push(currentWord);
+                wrongWords = wrongWords.filter(w => w !== currentWord);
+            } else {
+                if(!wrongWords.includes(currentWord)) wrongWords.push(currentWord);
+            }
+            updateLists();
+            document.getElementById("retryBtn").style.display = wrongWords.length ? "inline-block" : "none";
+            if(correct) nextWord();
+            checkNextPageButton();
+            checkRestartButton();
+        }
         document.getElementById("status").innerText = "Status: Idle";
     };
 
+    recognition.onerror = function(event){
+        recordBtn.classList.remove("recording");
+        document.getElementById("status").innerText =
+            "Status: Error - " + event.error;
+    };
+
     recognition.start();
+    setTimeout(() => { recognition.stop(); }, 4000);
 }
 
-// ===================== CHECK ANSWER =====================
+function cleanText(text){
+    return text.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "").trim();
+}
+
 function checkAnswer(spoken){
-    if(spoken.replace(/\s/g,'').toLowerCase() ===
-       currentWord.replace(/\s/g,'').toLowerCase()){
+    let cleanSpoken = cleanText(spoken);
+    let cleanCorrect = cleanText(currentWord);
+
+    if(cleanSpoken === cleanCorrect){
         document.getElementById("result").innerText = "✅ Correct";
+        return true;
     } else {
         document.getElementById("result").innerText = "❌ Wrong";
+        return false;
     }
 }
 
-// ===================== PLAY CORRECT SOUND =====================
 function playCorrect(){
     const utter = new SpeechSynthesisUtterance(currentWord);
     utter.lang = currentLanguage;
     speechSynthesis.speak(utter);
 }
 
+function nextWord(){
+    currentIndex++;
+    if(currentIndex >= wordList[currentLanguage].length){
+        alert("🎉 You completed all words!");
+        currentIndex = 0;
+    }
+    initWord();
+}
+
+function updateLists(){
+    document.getElementById("correctList").innerText = correctWords.join(", ");
+    document.getElementById("wrongList").innerText = wrongWords.join(", ");
+}
+
+function checkNextPageButton(){
+    if(correctWords.length >= 4){
+        document.getElementById("nextPageBtn").style.display = "inline-block";
+    }
+}
+
+function checkRestartButton(){
+    if(correctWords.length >= 4){
+        document.getElementById("restartBtn").style.display = "inline-block";
+    }
+}
+
+function goNextPage(){
+    alert("🎯 Next Page Unlocked!");
+}
+
+function retryWrong(){
+    if(wrongWords.length === 0){
+        alert("No wrong words to retry!");
+        return;
+    }
+    currentIndex = wordList[currentLanguage].indexOf(wrongWords[0]);
+    initWord();
+}
+
+function restart(){
+    location.reload();
+}
+
 </script>
-
 </body>
-
 </html>
