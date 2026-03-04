@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Voice Practice System</title>
+<style>
+body { font-family: Arial; padding:20px; }
+button { padding:8px 15px; font-size:16px; margin:5px; }
+#status { font-weight:bold; margin-top:10px; }
+#spoken { font-size:18px; margin-top:10px; color:blue; }
+#result { font-size:40px; margin-top:10px; }
+#micStatus { margin-bottom:15px; font-weight:bold; }
+select { padding:5px; font-size:16px; }
+</style>
+</head>
+<body>
+
+<h2>Voice Practice System</h2>
+
+<p id="micStatus">Checking microphone permission...</p>
+
+<label>Select Language:</label>
+<select id="languageSelect" onchange="changeLanguage()">
+<option value="en-US">English</option>
+<option value="ar-SA">Arabic</option>
+<option value="ur-PK">Urdu</option>
+</select>
+
+<hr>
+
+<p><strong>Word:</strong> <span id="targetWord">Apple</span></p>
+
+<button onclick="startRecording()">🎙 Record</button>
+<button onclick="playCorrect()">🔊 Play Correct Sound</button>
+
+<p id="status">Status: Idle</p>
+<p id="spoken">You said: ---</p>
+<p id="result">❓</p>
+
+<script>
+
+// ===================== WORDS =====================
+const words = {
+    "en-US": "Apple",
+    "ar-SA": "تفاحة",
+    "ur-PK": "سیب"
+};
+
+let currentLanguage = "en-US";
+let currentWord = words[currentLanguage];
+
+// ===================== CHANGE LANGUAGE =====================
+function changeLanguage(){
+    currentLanguage = document.getElementById("languageSelect").value;
+    currentWord = words[currentLanguage];
+    document.getElementById("targetWord").innerText = currentWord;
+    document.getElementById("spoken").innerText = "You said: ---";
+    document.getElementById("result").innerText = "❓";
+}
+
+// ===================== MICROPHONE PERMISSION CHECK =====================
+async function checkMicPermission() {
+    try {
+        const permission = await navigator.permissions.query({ name: 'microphone' });
+
+        updatePermissionStatus(permission.state);
+
+        permission.onchange = () => {
+            updatePermissionStatus(permission.state);
+        };
+
+    } catch (error) {
+        document.getElementById("micStatus").innerText =
+            "⚠ Permission API not supported in this browser.";
+    }
+}
+
+function updatePermissionStatus(state){
+    if (state === "granted") {
+        document.getElementById("micStatus").innerText =
+            "🎤 Microphone: Allowed (Always)";
+    }
+    else if (state === "prompt") {
+        document.getElementById("micStatus").innerText =
+            "⚠ Microphone: Permission Required (Click Record)";
+    }
+    else if (state === "denied") {
+        document.getElementById("micStatus").innerText =
+            "❌ Microphone Blocked. Enable it from browser settings.";
+    }
+}
+
+checkMicPermission();
+
+// ===================== RECORDING =====================
+function startRecording(){
+
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = currentLanguage;
+
+    recognition.onstart = function(){
+        document.getElementById("status").innerText = "Status: 🎙 Listening...";
+    };
+
+    recognition.onresult = function(event){
+        let spokenText = event.results[0][0].transcript.trim();
+        document.getElementById("spoken").innerText = "You said: " + spokenText;
+        checkAnswer(spokenText);
+    };
+
+    recognition.onerror = function(event){
+        document.getElementById("status").innerText = "Status: ❌ Error";
+    };
+
+    recognition.onend = function(){
+        document.getElementById("status").innerText = "Status: Idle";
+    };
+
+    recognition.start();
+}
+
+// ===================== CHECK ANSWER =====================
+function checkAnswer(spoken){
+    if(spoken.replace(/\s/g,'').toLowerCase() ===
+       currentWord.replace(/\s/g,'').toLowerCase()){
+        document.getElementById("result").innerText = "✅ Correct";
+    } else {
+        document.getElementById("result").innerText = "❌ Wrong";
+    }
+}
+
+// ===================== PLAY CORRECT SOUND =====================
+function playCorrect(){
+    const utter = new SpeechSynthesisUtterance(currentWord);
+    utter.lang = currentLanguage;
+    speechSynthesis.speak(utter);
+}
+
+</script>
+
+</body>
+</html>
