@@ -1,3 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Voice Practice System - Word Box</title>
+<style>
+/* Center stage and all content */
+body { font-family: Arial; padding:20px; text-align:center; }
+
+/* Word box styling */
+#wordBox {
+    font-size: 60px;          /* make the word bigger */
+    font-weight: bold;
+    display: inline-block;
+    margin: 40px 0;           /* more space above and below */
+    line-height: 1.5;         /* vertical spacing inside */
+}
+#wordBox span.brackets {
+    margin: 0 15px;           /* space between brackets and word */
+    font-weight: normal;       /* thinner brackets */
+}
+
+/* Buttons styling */
+button { padding:10px 18px; font-size:16px; margin:8px; }
+
+/* Correct/Wrong lists centered */
+#lists { display: inline-block; text-align:left; margin-top:20px; }
+
+/* Other elements styling */
+#status { font-weight:bold; margin-top:10px; }
+#spoken { font-size:18px; margin-top:10px; color:blue; }
+#result { font-size:40px; margin-top:10px; }
+#micStatus { margin-bottom:15px; font-weight:bold; }
+select { padding:5px; font-size:16px; }
+.recording { background:red; color:white; }
+#nextPageBtn, #retryBtn, #restartBtn { display:none; background:green; color:white; }
+</style>
+</head>
+<body>
+
+<h2>🎓 Voice Practice System</h2>
+
+<p id="micStatus">Checking microphone permission...</p>
+
+<label>Select Language:</label>
+<select id="languageSelect" onchange="changeLanguage()">
+<option value="en-US">English</option>
+<option value="ar-SA">Arabic</option>
+<option value="ur-PK">Urdu</option>
+</select>
+
+<hr>
+
+<!-- Word box with dashes -->
+<p><strong>Word:</strong> 
+    <span id="wordBox">
+        -------- <span class="brackets">[</span> <span id="targetWord">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="brackets">]</span> --------
+    </span>
+</p>
+
+<button id="recordBtn" onclick="startRecording()">🎙 Record</button>
+<button onclick="playCorrect()">🔊 Play Correct Sound</button>
+<button id="nextBtn" onclick="nextWord()">➡ Next Word</button>
+<button id="nextPageBtn" onclick="goNextPage()">🎯 Next Page</button>
+<button id="retryBtn" onclick="retryWrong()">🔄 Try Again</button>
+<button id="restartBtn" onclick="restart()">🔁 Restart</button>
+
+<p id="status">Status: Idle</p>
+<p id="spoken">You said: ---</p>
+<p id="result">❓</p>
+
+<div id="lists">
+    <div><strong>✅ Correct Words:</strong> <span id="correctList"></span></div>
+    <div><strong>❌ Wrong Words:</strong> <span id="wrongList"></span></div>
+</div>
+
 <script>
 // ================= WORD LIST =================
 const wordList = {
@@ -122,7 +198,6 @@ function checkAnswer(spoken){
     }
 }
 
-// ==================== FIXED playCorrect ====================
 function playCorrect(){
     const utter = new SpeechSynthesisUtterance(currentWord);
     utter.lang = currentLanguage;
@@ -138,9 +213,8 @@ function playCorrect(){
     speechSynthesis.speak(utter);
 }
 
-// Ensure voices are loaded
+// Ensure voices are loaded properly
 speechSynthesis.onvoiceschanged = () => {};
-// ============================================================
 
 function nextWord(){
     currentIndex++;
@@ -184,4 +258,7 @@ function retryWrong(){
 function restart(){
     location.reload();
 }
+
 </script>
+</body>
+</html>a
