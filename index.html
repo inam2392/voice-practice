@@ -32,9 +32,7 @@ select { padding:5px; font-size:16px; }
 </style>
 </head>
 <body>
-<p style="color:red; font-weight:bold;">
-⚠ Please open this page in a new tab to use the microphone.
-</p>
+
 <h2>🎓 Voice Practice System</h2>
 
 <p id="micStatus">Checking microphone permission...</p>
@@ -49,7 +47,7 @@ select { padding:5px; font-size:16px; }
 <hr>
 
 <!-- Word box with dashes -->
-<p><strong>Word:</strong> <span id="wordBox">-------- [ <span id="targetWord"></span> ] --------</span></p>
+<p><strong>Word:</strong> <span id="wordBox">-------- [         <span id="targetWord"></span>         ] --------</span></p>
 
 <button id="recordBtn" onclick="startRecording()">🎙 Record</button>
 <button onclick="playCorrect()">🔊 Play Correct Sound</button>
@@ -124,54 +122,25 @@ function updatePermissionStatus(state){
 }
 
 checkMicPermission();
+function playCorrect(){
+    const utter = new SpeechSynthesisUtterance(currentWord);
+    utter.lang = currentLanguage;
 
-function startRecording(){
-    const recordBtn = document.getElementById("recordBtn");
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = currentLanguage;
-    recognition.continuous = false;
-    recognition.interimResults = true;
+    // ===== REQUIRED FIX FOR ARABIC/URDU VOICES =====
+    const voices = speechSynthesis.getVoices();
+    if(currentLanguage === "ar-SA"){
+        utter.voice = voices.find(v => v.lang.startsWith('ar')) || null;
+    } else if(currentLanguage === "ur-PK"){
+        utter.voice = voices.find(v => v.lang.startsWith('ur')) || null;
+    }
+    // ===============================================
 
-    recordBtn.classList.add("recording");
-    document.getElementById("status").innerText = "Status: 🎙 Listening... Speak now";
-    document.getElementById("spoken").innerText = "You said: ";
+    speechSynthesis.speak(utter);
+}
 
-    recognition.onresult = function(event){
-        let spokenText = "";
-        for (let i = 0; i < event.results.length; i++) {
-            spokenText += event.results[i][0].transcript;
-        }
-        document.getElementById("spoken").innerText = "You said: " + spokenText;
-    };
+// Ensure voices are loaded properly
+speechSynthesis.onvoiceschanged = () => {};
 
-    recognition.onend = function(){
-        recordBtn.classList.remove("recording");
-        let spokenText = document.getElementById("spoken").innerText.replace("You said: ", "").trim();
-        if(spokenText !== ""){
-            let correct = checkAnswer(spokenText);
-            if(correct){
-                if(!correctWords.includes(currentWord)) correctWords.push(currentWord);
-                wrongWords = wrongWords.filter(w => w !== currentWord);
-            } else {
-                if(!wrongWords.includes(currentWord)) wrongWords.push(currentWord);
-            }
-            updateLists();
-            document.getElementById("retryBtn").style.display = wrongWords.length ? "inline-block" : "none";
-            if(correct) nextWord();
-            checkNextPageButton();
-            checkRestartButton();
-        }
-        document.getElementById("status").innerText = "Status: Idle";
-    };
-
-    recognition.onerror = function(event){
-        recordBtn.classList.remove("recording");
-        document.getElementById("status").innerText =
-            "Status: Error - " + event.error;
-    };
-
-    recognition.start();
-    setTimeout(() => { recognition.stop(); }, 4000);
 }
 
 function cleanText(text){
