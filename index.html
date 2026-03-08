@@ -294,7 +294,78 @@ html, body {
     font-weight: 100;       /* very thin */
     font-size: 48px;        /* same size as word for alignment */
     color: #333;            /* optional: slightly lighter than black */
-    margin: 0 50px;         /* spacing between brackets and word */
+    margin: 0 2px;         /* spacing between brackets and word */
+}
+#wordArea{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:1px;
+margin-top: -80px;
+}
+
+#leftImage {
+    width:400px;
+    height:400px;
+    display: none;
+    position: top;        /* important for pseudo-element */
+    animation: float 2.5s ease-in-out infinite;
+    background: transparent;   /* no background */
+    padding: 0;
+    border: none;
+}
+
+#leftImage::after {
+    content: "";
+    position: absolute;
+    bottom: -15px;            /* shadow below image */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;             /* shadow width */
+    height: 25px;             /* shadow height */
+    background: rgba(0,0,0,0.35); /* darker so visible */
+    border-radius: 50%;       /* oval shadow */
+    filter: blur(10px);       /* soft shadow */
+    z-index: -1;              /* behind image */
+    animation: shadowFloat 2.5s ease-in-out infinite; /* move shadow slightly */
+}
+
+/* float animation for image */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0px); }
+}
+
+/* shadow movement: scale slightly to simulate drag */
+@keyframes shadowFloat {
+    0% { transform: translateX(-50%) scaleX(1); opacity: 0.60; }
+    50% { transform: translateX(-50%) scaleX(1.1); opacity: 0.10; }
+    100% { transform: translateX(-50%) scaleX(1); opacity: 0.60; }
+}
+
+#wordImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+#playcorrect {           /* make sure this matches your button's id exactly */
+    padding: 8px 14px;
+    border-radius: 12px;        /* rounded */
+    border: none;               /* remove border */
+    outline: none;              /* remove focus outline */
+    background-color: #8ecae6;  /* soft color */
+    color: white;
+    font-size: 20px;            /* icon bigger */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+#playcorrect:hover {
+    background-color: #219ebc;  /* slightly darker on hover */
+    transform: translateY(-2px);
 }
 /* Buttons styling */
 button { padding:10px 18px; font-size:16px; margin:8px; }
@@ -313,20 +384,7 @@ select { padding:5px; font-size:16px; }
 </style>
 </head>
 <body>
-<div id="leftImage" style="
-    position: fixed;
-    top: 50%;
-    left: 20px;
-    transform: translateY(-50%);
-    width: 120px;
-    height: 120px;
-    display: none;
-    border-radius: 10px;
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-    z-index: 5;
-">
-    <img id="wordImage" src="" alt="Word Image" style="width:100%; height:100%; object-fit:contain;">
-</div>
+
 <div id="topHeader">
     <div id="topBar">
         <h2>📘 Learning Alphabet System</h2>
@@ -359,15 +417,26 @@ select { padding:5px; font-size:16px; }
 <p><strong></strong> 
     <span id="wordBox">
         <span class="dashes"></span> 
-        <span class="brackets">[</span> 
+        <span class="brackets"></span> 
         <span id="targetWord"></span> 
-        <span class="brackets">]</span> 
+        <span class="brackets"></span> 
         <span class="dashes"></span>
     </span>
 </p>
+<p>
 
+<div id="wordArea">
+    <span id="wordBox">
+        <span id="targetWord"></span> 
+    </span>
+    <div id="leftImage">
+        <img id="wordImage" src="" alt="Word Image">
+    </div>
+</div>
+
+</p>
 <button id="recordBtn" onclick="startRecording()">🎙 Record</button>
-<button onclick="playCorrect()">🔊 Play Correct Sound</button>
+<button id="playcorrect" onclick="playcorrect()">🔊</button>
 <button id="nextBtn" onclick="nextWord()">➡ Next Word</button>
 <button id="nextPageBtn" onclick="goNextPage()">🎯 Next Page</button>
 <button id="retryBtn" onclick="retryWrong()">🔄 Try Again</button>
@@ -396,25 +465,46 @@ let currentWord = wordList[currentLanguage][currentIndex];
 
 let correctWords = [];
 let wrongWords = [];
-
+// ================= WORD IMAGES =================
+const wordImages = {
+    "en-US": {
+        "Apple": "images/apple.png",
+        "Banana": "images/banana.png",
+        "Orange": "images/orange.png",
+        "Grape": "images/grape.png",
+        "Lemon": "images/lemon.png"
+    },
+    "ar-SA": {
+        "تفاحة": "images/apple.png",
+        "موز": "images/banana.png",
+        "برتقال": "images/orange.png",
+        "عنب": "images/grape.png",
+        "ليمون": "images/lemon.png"
+    },
+    "ur-PK": {
+        "سیب": "images/apple.png",
+        "کیلا": "images/banana.png",
+        "سنگترہ": "images/orange.png",
+        "انگور": "images/grape.png",
+        "لیموں": "images/lemon.png"
+    }
+};
 function initWord(){
+
     currentWord = wordList[currentLanguage][currentIndex];
+
     document.getElementById("targetWord").innerText = currentWord;
     document.getElementById("spoken").innerText = "You said: ---";
     document.getElementById("result").innerText = "❓";
 
-    // Show corresponding image on left
     const imgContainer = document.getElementById("leftImage");
     const img = document.getElementById("wordImage");
-    
-    // get image path
-    const imgSrc = wordImages[currentLanguage][currentWord];
-    
-    if(imgSrc && imgSrc !== ""){
-        img.src = imgSrc;          // set image source
-        imgContainer.style.display = "block"; // show container
+
+    if(wordImages[currentLanguage] && wordImages[currentLanguage][currentWord]){
+        img.src = wordImages[currentLanguage][currentWord];
+        imgContainer.style.display = "block";
     } else {
-        imgContainer.style.display = "none";  // hide if no image
+        imgContainer.style.display = "none";
     }
 }
 initWord();
@@ -580,29 +670,7 @@ function retryWrong(){
 function restart(){
     location.reload();
 }
-const wordImages = {
-    "en-US": {
-        "Apple": "apple.png",
-        "Banana": "images/banana.png",
-        "Orange": "images/orange.png",
-        "Grape": "images/grape.png",
-        "Lemon": "images/lemon.png"
-    },
-    "ar-SA": {
-        "تفاحة": "images/apple.png",
-        "موز": "images/banana.png",
-        "برتقال": "images/orange.png",
-        "عنب": "images/grape.png",
-        "ليمون": "images/lemon.png"
-    },
-    "ur-PK": {
-        "سیب": "images/apple.png",
-        "کیلا": "images/banana.png",
-        "سنگترہ": "images/orange.png",
-        "انگور": "images/grape.png",
-        "لیموں": "images/lemon.png"
-    }
-};
+
 </script>
 </body>
 </html>a
